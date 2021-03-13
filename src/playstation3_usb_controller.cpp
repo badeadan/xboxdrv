@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "log.hpp"
+#include "raise_exception.hpp"
 #include "usb_helper.hpp"
 #include "xboxmsg.hpp"
 
@@ -32,6 +33,25 @@ Playstation3USBController::Playstation3USBController(libusb_device* dev, bool tr
   endpoint_out(2)
 {
   usb_claim_interface(0, try_detach);
+
+  libusb_config_descriptor* config;
+  int ret = libusb_get_config_descriptor(m_dev, 0 /* config_index */, &config);
+  if (ret != LIBUSB_SUCCESS) {
+    raise_exception(std::runtime_error, "libusb_get_config_descriptor() failed: " << usb_strerror(ret));
+  }
+
+  // Do not assume endpoint_in is 1
+  const libusb_interface *interface = config->interface;
+  const libusb_interface_descriptor configuration = interface->altsetting[0];
+  for(int i = 0; i < configuration.bNumEndpoints; ++i) {
+    const libusb_endpoint_descriptor endpoint = configuration.endpoint[i];
+
+    if ((endpoint.bEndpointAddress & LIBUSB_ENDPOINT_IN) == LIBUSB_ENDPOINT_IN) {
+      endpoint_in = endpoint.bEndpointAddress & 0x0F;
+      log_debug("endpoint_in: " << endpoint_in); 
+    }
+  }
+  
   usb_submit_read(endpoint_in, 64);
 }
 
