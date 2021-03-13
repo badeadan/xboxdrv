@@ -28,7 +28,7 @@
 
 Playstation3USBController::Playstation3USBController(libusb_device* dev, bool try_detach) :
   USBController(dev),
-  endpoint_in(1),
+  endpoint_in(130),
   endpoint_out(2)
 {
   usb_claim_interface(0, try_detach);

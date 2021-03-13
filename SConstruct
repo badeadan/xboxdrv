@@ -116,10 +116,17 @@ elif 'BUILD' in env and env['BUILD'] == 'custom':
 else:
     env.Append(CPPFLAGS = ['-g', '-O3', '-Wall', '-ansi', '-pedantic'])
 
+debug_usb = False
+
 env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs dbus-glib-1 | sed 's/-I/-isystem/g'")
 env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs glib-2.0 | sed 's/-I/-isystem/g'")
 env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs gthread-2.0 | sed 's/-I/-isystem/g'")
-env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs libusb-1.0 | sed 's/-I/-isystem/g'")
+
+if debug_usb:
+	env.Append(CPPFLAGS = '-I../libusb-bin/include/libusb-1.0/')
+else:
+	env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs libusb-1.0 | sed 's/-I/-isystem/g'")
+	
 env.ParseConfig(env['PKG_CONFIG'] + " --cflags --libs libudev | sed 's/-I/-isystem/g'")
 
 f = open("VERSION")
@@ -157,6 +164,9 @@ libxboxdrv = env.StaticLibrary('xboxdrv',
                                Glob('src/buttonevent/*.cpp') +
                                Glob('src/modifier/*.cpp'))
 env.Prepend(LIBS = libxboxdrv)
+
+if debug_usb:
+	env.Append(LIBS = File('../libusb-bin/lib/libusb-1.0.a'))
 
 for file in Glob('test/*_test.cpp', strings=True):
     Alias('tests', env.Program(file[:-4], file))

@@ -140,7 +140,12 @@ USBController::usb_submit_read(int endpoint, int len)
   if (ret != LIBUSB_SUCCESS)
   {
     libusb_free_transfer(transfer);
-    raise_exception(std::runtime_error, "libusb_submit_transfer(): " << usb_strerror(ret));
+    if (endpoint == 1) {
+	    // fail gracefully
+	    log_debug("endpoint 1 failed, assuming 3rd party controller and ignoring.");
+	    return;
+    }
+    raise_exception(std::runtime_error, "libusb_submit_transfer(" << endpoint << ", " << len << "): " << usb_strerror(ret));
   }
   else
   {
@@ -243,6 +248,8 @@ void
 USBController::on_read_data(libusb_transfer* transfer)
 {
   assert(transfer);
+
+  log_debug("on_read_data");
 
   if (transfer->status == LIBUSB_TRANSFER_COMPLETED)
   {
