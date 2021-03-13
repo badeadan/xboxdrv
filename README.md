@@ -1,3 +1,14 @@
+Note
+====
+
+This is a fork of the original xboxdrv code, adding support for a cheap
+off-brand PS3 controller bought off Amazon.
+
+If you bought one too and vanilla xboxdrv doesn't work, feel free to try
+this version.
+
+If it still doesn't, please, run with --debug and fill an issue.
+
 Xbox/Xbox360 USB Gamepad Driver for Userspace
 =============================================
 
